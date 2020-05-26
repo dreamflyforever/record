@@ -133,11 +133,11 @@ int main()
 
 	record_init();
 
-	if(  (fp =fopen("sound.pcm","w")) < 0)
+	if ((fp = fopen("sound.pcm","w")) < 0)
 		printf("open sound.pcm fial\n");
-	
+
 	size = rec_obj.frames * 2; /* 2 bytes/sample, 1 channels */  
-	
+
 	printf("size = %d\n",size);
 	buffer = (char *) malloc(size);  
 	loops = 3120;
