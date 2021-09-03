@@ -3,18 +3,11 @@
    and writes to standard output  of data. 
  */
 
+#include <capture.h>
+#include <stdlib.h>
+
 /* Use the newer ALSA API */  
-#include <stdio.h>
-#include <alsa/asoundlib.h>
-
-struct record_str{
-	snd_pcm_t *handle;  
-	snd_pcm_hw_params_t *params;  
-	int dir;  
-	snd_pcm_uframes_t frames;  
-};
-
-struct record_str rec_obj;
+static struct record_str rec_obj;
 
 int record_init()
 {
@@ -71,6 +64,7 @@ int record_deinit()
 {
 	int val, val2;
 	int frames;
+#if 1
 	/******************打印参数*********************/
 	snd_pcm_hw_params_get_channels(rec_obj.params, &val);  
 	printf("channels = %d\n", val);  
@@ -118,7 +112,8 @@ int record_deinit()
 	val = snd_pcm_hw_params_can_sync_start(rec_obj.params);  
 	printf("can sync start = %d\n", val);  
 	/*******************************************************************/
-	snd_pcm_drain(rec_obj.handle);  
+#endif
+	snd_pcm_drop(rec_obj.handle);
 	snd_pcm_close(rec_obj.handle); 
 	return 0;
 }
@@ -130,17 +125,18 @@ int main()
 	int size;  
 	FILE *fp ;
 	char *buffer;
-
+start:
+	system("rm sound.pcm");
 	record_init();
-
 	if ((fp = fopen("sound.pcm","w")) < 0)
 		printf("open sound.pcm fial\n");
 
 	size = rec_obj.frames * 2; /* 2 bytes/sample, 1 channels */  
 
-	printf("size = %d\n",size);
+	printf(">>>>>>>>>>>>>>>record start<<<<<<<<<<<<<<<\n");
+	//printf("size = %d\n",size);
 	buffer = (char *) malloc(size);  
-	loops = 3120;
+	loops = 1120;
 	while (loops > 0) {  
 		loops--;  
 		rc = snd_pcm_readi(rec_obj.handle, buffer, rec_obj.frames); 
@@ -160,7 +156,12 @@ int main()
 			fprintf(stderr,  "short write: wrote %d bytes/n", rc);  
 	}
 	record_deinit();
+	printf(">>>>>>>>>>>>>>>record end<<<<<<<<<<<<<<<\n");
 	fclose(fp); 
-	free(buffer);  
+	free(buffer);
+	printf(">>>>>>>>>>>>>>>player start<<<<<<<<<<<<<<<\n");
+	system("ffplay -f s16le -ar 16000 -ac 1 -autoexit sound.pcm");
+	printf(">>>>>>>>>>>>>>>player end<<<<<<<<<<<<<<<\n");
+	goto start;
 	return 0;
 }
