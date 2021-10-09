@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 /* Use the newer ALSA API */  
-static struct record_str rec_obj;
+struct record_str rec_obj;
 
 int record_init()
 {
@@ -146,8 +146,8 @@ start:
 			snd_pcm_prepare(rec_obj.handle);  
 		} else if (rc < 0) {  
 			fprintf(stderr,  
-					"error from read: %s/n",  
-					snd_strerror(rc));  
+				"error from read: %s/n",  
+				snd_strerror(rc));  
 		} else if (rc != (int)rec_obj.frames) {  
 			fprintf(stderr, "short read, read %d frames/n", rc);  
 		}  
@@ -162,6 +162,7 @@ start:
 	printf(">>>>>>>>>>>>>>>player start<<<<<<<<<<<<<<<\n");
 	system("ffplay -f s16le -ar 16000 -ac 1 -autoexit sound.pcm");
 	printf(">>>>>>>>>>>>>>>player end<<<<<<<<<<<<<<<\n");
+	sleep(10);
 	goto start;
 	return 0;
 }
